@@ -1,0 +1,89 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Student {
+private:
+    string name;
+    int rollNumber;
+    float cgpa;
+    string courses[10];  
+    int courseCount;
+
+public:
+    Student() {
+        name = "";
+        rollNumber = 0;
+        cgpa = 0.0;
+        courseCount = 0;
+    }
+
+    Student(string n, int roll, float gpa) {
+        name = n;
+        rollNumber = roll;
+        courseCount = 0;
+        setCGPA(gpa);
+    }
+
+    Student(const Student &s) {
+        name = s.name;
+        rollNumber = s.rollNumber;
+        cgpa = s.cgpa;
+        courseCount = s.courseCount;                                
+        for (int i = 0; i < courseCount; ++i) {
+            courses[i] = s.courses[i];
+        }
+    }
+
+    ~Student() {
+        cout << "Destructor called for student: " << name << endl;
+    }
+
+    void addCourse(string course) {
+        if (courseCount < 10) {
+            courses[courseCount] = course;
+            courseCount++;
+        } else {
+            cout << "Cannot add more courses. Limit reached!" << endl;
+        }
+    }
+
+    void setCGPA(float gpa) {
+        if (gpa >= 0.0 && gpa <= 10.0)
+            cgpa = gpa;
+        else {
+            cout << "Invalid CGPA! Setting to 0.0" << endl;
+            cgpa = 0.0;
+        }
+    }
+
+    void displayInfo() const {
+        cout << "\n--- Student Info ---\n";
+        cout << "Name: " << name << endl;
+        cout << "Roll Number: " << rollNumber << endl;
+        cout << "CGPA: " << cgpa << endl;
+        cout << "Courses: ";
+        for (int i = 0; i < courseCount; ++i) {
+            cout << courses[i];
+            if (i != courseCount - 1) cout << ", ";
+        }
+        cout << endl;
+    }
+
+    int getRollNumber() const {
+        return rollNumber;
+    }
+};
+
+int main() {
+    Student s("Rahul", 96, 8.2);
+    s.addCourse("Math");
+    s.addCourse("Physics");
+    s.setCGPA(8.2);
+    s.displayInfo();
+
+    Student s2 = s; 
+    s2.displayInfo();
+
+    return 0;
+}
