@@ -1,0 +1,175 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+class User {
+protected:
+    string name, id, contact;
+    int age;
+
+public:
+    User(string n, int a, string i, string c) {
+        if (n.empty()) throw invalid_argument("Name cannot be empty.");
+        if (a <= 0 || a > 120) throw invalid_argument("Invalid age.");
+
+        name = n;
+        age = a;
+        id = i;
+        contact = c;
+    }
+
+    virtual void show() {
+        cout << "Name: " << name << ", Age: " << age << ", ID: " << id << ", Contact: " << contact << endl;
+    }
+
+    virtual double payment() {
+        return 0.0;
+    }
+
+    virtual ~User() {}
+};
+
+class Learner : public User {
+    string course, date;
+    float marks;
+
+public:
+    Learner(string n, int a, string i, string c, string crs, string dt, float m)
+        : User(n, a, i, c), course(crs), date(dt) {
+        if (m < 0.0 || m > 4.0) throw invalid_argument("Invalid GPA.");
+        marks = m;
+    }
+
+    void show() override {
+        User::show();
+        cout << "Course: " << course << ", GPA: " << marks << ", Enrolled: " << date << endl;
+    }
+
+    double payment() override {
+        return 1000.0;
+    }
+};
+
+class Teacher : public User {
+    string dept, field, joinDate;
+
+public:
+    Teacher(string n, int a, string i, string c, string d, string f, string j)
+        : User(n, a, i, c), dept(d), field(f), joinDate(j) {}
+
+    void show() override {
+        User::show();
+        cout << "Dept: " << dept << ", Field: " << field << ", Joined: " << joinDate << endl;
+    }
+
+    double payment() override {
+        return 5000.0;
+    }
+};
+
+class Subject {
+    string code, title, desc;
+    int credit;
+
+public:
+    Subject(string c, string t, int cr, string d) : code(c), title(t), desc(d) {
+        if (cr <= 0) throw invalid_argument("Invalid credit.");
+        credit = cr;
+    }
+
+    void show() {
+        cout << "Subject: " << code << " - " << title << " (" << credit << " credits)\n";
+        cout << "Info: " << desc << endl;
+    }
+};
+
+class MarkSheet {
+    map<string, float> records;
+
+public:
+    void add(string sid, float mark) {
+        if (mark < 0 || mark > 100) throw invalid_argument("Mark must be 0-100.");
+        records[sid] = mark;
+    }
+
+    float average() {
+        if (records.empty()) return 0.0f;
+        float total = 0;
+        for (auto& r : records) total += r.second;
+        return total / records.size();
+    }
+
+    float top() {
+        float maxMark = 0;
+        for (auto& r : records) maxMark = max(maxMark, r.second);
+        return maxMark;
+    }
+
+    vector<string> failed(float pass = 40.0) {
+        vector<string> failList;
+        for (auto& r : records) {
+            if (r.second < pass) failList.push_back(r.first);
+        }
+        return failList;
+    }
+};
+
+class Manager {
+    map<string, vector<string>> records;
+
+public:
+    void addEntry(string courseCode, string sid) {
+        records[courseCode].push_back(sid);
+    }
+
+    void removeEntry(string courseCode, string sid) {
+        auto& list = records[courseCode];
+        list.erase(remove(list.begin(), list.end(), sid), list.end());
+    }
+
+    int total(string courseCode) {
+        return records[courseCode].size();
+    }
+};
+
+void demo() {
+    cout << "\n--- Demo Output ---\n";
+    vector<User*> list;
+
+    list.push_back(new Learner("Harsh", 21, "L01", "111", "IT", "2024-01", 3.6));
+    list.push_back(new Teacher("Abhinav", 40, "T01", "222", "Math", "Algebra", "2019-01"));
+
+    for (User* u : list) {
+        u->show();
+        cout << "Payment: $" << u->payment() << "\n\n";
+    }
+
+    for (User* u : list) delete u;
+}
+
+int main() {
+    try {
+        Subject s("MTH101", "Math Basics", 4, "Algebra and geometry");
+        s.show();
+
+        MarkSheet ms;
+        ms.add("L01", 78);
+        ms.add("L02", 55);
+        cout << "Average: " << ms.average() << "\n";
+        cout << "Top Score: " << ms.top() << "\n";
+
+        Manager m;
+        m.addEntry("MTH101", "L01");
+        cout << "Enrolled in MTH101: " << m.total("MTH101") << "\n";
+
+        demo();
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
